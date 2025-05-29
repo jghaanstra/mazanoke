@@ -412,6 +412,156 @@
 
         </div>
 
+        <!-- Rename Options -->
+        <div id="renameOptionsContainer" class="image-options-container" data-elevation="2">
+          <div class="image-subpage-title-container">
+            <h2 class="h4">Rename Options</h2>
+            <div class="image-subpage-title-description">Customize the filenames of your images during optimization.</div>
+
+              <div class="tabs">
+                <button class="tab-button tab-button--active" onclick="switchRenameTab('order')">Order</button>
+                <button class="tab-button" onclick="switchRenameTab('insert')">Insert</button>
+                <button class="tab-button" onclick="switchRenameTab('replace')">Replace</button>
+                <button class="tab-button" onclick="switchRenameTab('serialize')">Serialize</button>
+                <button class="tab-button" onclick="switchRenameTab('delete')">Delete</button>
+              </div>
+
+              <!-- Order Tab -->
+              <div id="renameTabOrder" class="rename-tab rename-tab--active">
+                <div class="form-group">
+                  <div class="form-group__label-content">
+                    <label class="form-group__label-text">Apply Order</label>
+                  </div>
+                  <div class="form-group__input-content">
+                    <select id="ruleOrderSelect" class="w-100" onchange="saveImageOrderToLocalStorage(this.value)">
+                      <option value="natural">Natural Order (default)</option>
+                      <option value="alphabetical">Alphabetical</option>
+                      <option value="reverseAlphabetical">Reverse Alphabetical</option>
+                      <option value="lastModified">Last Modified</option>
+                      <option value="reverseLastModified">Reverse Last Modified</option>
+                      <option value="random">Random</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Insert Tab -->
+              <div id="renameTabInsert" class="rename-tab hidden">
+                <div class="form-group">
+                  <div class="form-group__label-content">
+                    <label class="form-group__label-text">Insert</label>
+                  </div>
+                  <div class="form-group__input-content">
+                    <div class="flex flex-wrap gap-xs w-100">
+                      <div class="flex-1">
+                        <input type="text" id="renameRuleText" name="renameRuleText" placeholder="Enter text" class="w-100" />
+                      </div>
+                      <div class="flex-1">
+                        <select id="renameRulePosition" class="w-100" onchange="toggleAfterPositionField(this.value)">
+                          <option value="prefix">Prefix</option>
+                          <option value="suffix">Suffix</option>
+                          <option value="afterPosition">After Position</option>
+                          <option value="beforeEnd">Before End</option>
+                        </select>
+                      </div>
+                      <div class="flex-1 hidden" id="afterPositionField">
+                        <input type="number" id="renameRuleAfterPosition" name="renameRuleAfterPosition" placeholder="Position" value="0" class="w-100" min="0" />
+                      </div>
+                      <button id="addInsertRuleButton" class="button-cta button-primary" onclick="addInsertRule()">Add Rule</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Replace Tab -->
+              <div id="renameTabReplace" class="rename-tab hidden">
+                <div class="form-group">
+                  <div class="form-group__label-content">
+                    <label class="form-group__label-text">Replace</label>
+                  </div>
+                  <div class="form-group__input-content">
+                    <div class="flex flex-wrap gap-xs w-100">
+                      <div class="flex-1">
+                        <input type="text" id="replaceRuleFind" name="replaceRuleFind" placeholder="Find text" class="w-100" />
+                      </div>
+                      <div class="flex-1">
+                        <input type="text" id="replaceRuleReplace" name="replaceRuleReplace" placeholder="Replace with" class="w-100" />
+                      </div>
+                      <button id="addReplaceRuleButton" class="button-cta button-primary" onclick="addReplaceRule()">Add Rule</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Serialize Tab -->
+              <div id="renameTabSerialize" class="rename-tab hidden">
+                <div class="form-group">
+                  <div class="form-group__label-content">
+                    <label class="form-group__label-text">Serialize</label>
+                  </div>
+                  <div class="form-group__input-content">
+                    <div class="flex flex-wrap gap-xs w-100">
+                      <div class="flex-1">
+                        <label for="serializeStartNumber">Start Number</label>
+                        <input type="number" id="serializeStartNumber" name="serializeStartNumber" value="1" class="w-100" />
+                      </div>
+                      <div class="flex-1">
+                        <label for="serializeIncrement">Increment</label>
+                        <input type="number" id="serializeIncrement" name="serializeIncrement" value="1" class="w-100" />
+                      </div>
+                      <div class="flex-1">
+                        <label for="serializeDigits">Digits</label>
+                        <input type="number" id="serializeDigits" name="serializeDigits" value="2" class="w-100" />
+                      </div>
+                    </div>
+                    <button id="addSerializeRuleButton" class="button-cta button-primary mt-sm" onclick="addSerializeRule()">Add Rule</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Delete Tab -->
+              <div id="renameTabDelete" class="rename-tab hidden">
+                <div class="form-group">
+                  <div class="form-group__label-content">
+                    <label class="form-group__label-text">Delete</label>
+                  </div>
+                  <div class="form-group__input-content">
+                    <div class="flex flex-wrap gap-xs w-100">
+                      <div class="flex-1">
+                        <label for="deleteRuleText">Delete Specific Text</label>
+                        <input type="text" id="deleteRuleText" name="deleteRuleText" placeholder="Enter text to delete" class="w-100" />
+                      </div>
+                      <div class="flex-0">
+                        <p class="h6">OR</p>
+                      </div>
+                      <div class="flex-1">
+                        <label for="deleteRuleStart">From Position</label>
+                        <input type="number" id="deleteRuleStart" name="deleteRuleStart" placeholder="Start position" class="w-100" min="0" />
+                      </div>
+                      <div class="flex-1">
+                        <label for="deleteRuleEnd">To Position</label>
+                        <input type="number" id="deleteRuleEnd" name="deleteRuleEnd" placeholder="End position" class="w-100" min="0" />
+                      </div>
+                    </div>
+                    <button id="addDeleteRuleButton" class="button-cta button-primary mt-sm" onclick="addDeleteRule()">Add Rule</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Rename Rules Overview -->
+              <div class="form-group mt-lg rename-rules-overview">
+                <div class="form-group__label-content">
+                  <label class="form-group__label-text">Rename Rules</label>
+                </div>
+                <div class="form-group__input-content">
+                  <ul id="renameRulesList" class="rename-rules-list">
+                    <!-- dynamically added rules -->
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
         <div id="outputDownloadContainer" class="image-output-container" data-count="0" data-elevation="2">
 
           <div class="image-subpage-title-container">
@@ -520,6 +670,7 @@
   <script type="text/javascript" src="./assets/js/utilities.js"></script>
   <script type="text/javascript" src="./assets/js/helpers.js"></script>
   <script type="text/javascript" src="./assets/js/ui.js"></script>
+  <script type="text/javascript" src="./assets/js/renaming.js"></script>
   <script type="text/javascript" src="./assets/js/compression.js"></script>
   <script type="text/javascript" src="./assets/js/download.js"></script>
   <script type="text/javascript" src="./assets/js/events.js"></script>

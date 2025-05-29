@@ -116,7 +116,7 @@ async function compressImageQueue() {
   }
 
   imageCompression(preProcessedImage || file, options)
-    .then((output) => handleCompressionResult(file, output))
+    .then((output) => handleCompressionResult(file, output, i))
     .catch((error) => console.error(error.message))
     .finally(() => {
       state.compressProcessedCount++;
@@ -165,6 +165,9 @@ function compressImage(event) {
   state.compressProcessedCount = 0;
   state.fileProgressMap = {};
   state.isCompressing = true;
+
+  // sort images based on renaming sort order selection
+  sortCompressQueue();
   
   document.body.classList.add("compressing--is-active");
   ui.actions.dropZone.classList.add("hidden");
@@ -176,16 +179,18 @@ function compressImage(event) {
 }
 
 
-function handleCompressionResult(file, output) {
+function handleCompressionResult(file, output, i) {
   const { outputFileExtension, selectedFormat } = getFileType(file);
   const outputImageBlob = URL.createObjectURL(output);
 
   const { renamedFileName, isBrowserDefaultFileName } = renameBrowserDefaultFileName(file.name);
-  const outputFileNameText = updateFileExtension(
+  const outputFileName = updateFileExtension(
     isBrowserDefaultFileName ? renamedFileName : file.name,
     outputFileExtension,
     selectedFormat
   );
+
+  const outputFileNameText = applyRenameRules(outputFileName, i);
 
   const inputFileSize = parseFloat((file.size / 1024 / 1024).toFixed(3));
   const outputFileSize = parseFloat((output.size / 1024 / 1024).toFixed(3));
@@ -270,3 +275,27 @@ function resetCompressionState(isAllProcessed, aborted) {
   }
 }
 
+function sortCompressQueue() {
+  switch (imageOrder) {
+    case 'natural':
+      break;
+    case 'alphabetical':
+      state.compressQueue.sort((a, b) => a.name.localeCompare(b.name));
+      break;
+    case 'reverseAlphabetical':
+      state.compressQueue.sort((a, b) => b.name.localeCompare(a.name));
+      break;
+    case 'lastModified':
+      state.compressQueue.sort((a, b) => a.lastModified - b.lastModified);
+      break;
+    case 'reverseLastModified':
+      state.compressQueue.sort((a, b) => b.lastModified - a.lastModified);
+      break;
+    case 'random':
+      state.compressQueue.sort(() => Math.random() - 0.5);
+      break;
+    default:
+      console.warn(`Unknown sort order: ${imageOrder}`);
+      break;
+  }
+}
