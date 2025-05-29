@@ -204,6 +204,15 @@ function applyDeleteRule(fileName, rule) {
 // RENAME RULES MANAGEMENT
 function updateRenameRulesList() {
   const rulesList = document.getElementById('renameRulesList');
+  const rulesOverview = document.querySelector('.rename-rules-overview');
+  
+  if (renameRules.length === 0) {
+    rulesOverview.classList.add('hidden');
+    return;
+  } else {
+    rulesOverview.classList.remove('hidden');
+  }
+
   rulesList.innerHTML = '';
 
   renameRules.forEach((rule, index) => {
