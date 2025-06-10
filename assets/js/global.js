@@ -1,6 +1,6 @@
-window.App = window.App || {};
+window.app = window.app || {};
 
-App.ui = {
+app.ui = {
   dialogs: {
     installPWA: document.getElementById("installPWADialog"),
     updateToast: document.getElementById("updateToast"),
@@ -28,8 +28,10 @@ App.ui = {
     text: document.getElementById("compressProgressText"),
   },
   output: {
+    emptyState: document.getElementById("imageOutputEmptyState"),
     container: document.getElementById("outputDownloadContainer"),
     content: document.getElementById("outputDownloadContent"),
+    actionsContainer: document.getElementById("imageOutputActionsContainer"),
     downloadAllBtn: document.getElementById("downloadAllImagesButton"),
     subpageOutput: document.getElementById("subpageOutput"),
     imageCount: document.getElementById("compressedImageCount"),
@@ -51,7 +53,7 @@ App.ui = {
   },
 };
 
-App.config = {
+app.config = {
   form: {
     // Default form settings
     quality: {value: 80},
@@ -65,7 +67,7 @@ App.config = {
   thumbnailOptions: {
     initialQuality: 0.8,
     maxWidthOrHeight: 70,
-    usecompress: true,
+    useWebWorker: true,
     preserveExif: false,
     fileType: "image/png",
     libURL: "./browser-image-compression.js",
@@ -85,8 +87,17 @@ App.config = {
   },
 };
 
+app.config.avifPreProcessOptions = {
+  initialQuality: 0.8,
+  maxWidthOrHeight: app.config.form.limitDimensions,
+  useWebWorker: true,
+  preserveExif: false,
+  fileType: "image/jpeg",
+  libURL: "./browser-image-compression.js",
+  alwaysKeepResolution: true,
+};
 
-App.state = {
+app.state = {
   controller: null,
   compressQueue: [],
   compressQueueTotal: 0,
@@ -96,11 +107,22 @@ App.state = {
   isDownloadingAll: false,
   inputFileSize: null,
   outputImageCount: 0,
+  outputImageCountLock: Promise.resolve(),
   fileProgressMap: {},
   limitWeightUnit: "MB",
 };
 
-const ui = App.ui;
-const config = App.config;
-const state = App.state;
-zip = new JSZip();
+app.lib = {
+  imageCompression: imageCompression,     // Browser Image Compression
+  heicTo: window.HeicTo,                  // heic-to
+  libheif: { HeifDecoder } = libheif(),   // libheif-js
+  icoJs: window.ICO,                      // icojs
+  pngToIco: window.PngIcoConverter,       // PNG2ICOjs
+  utif: UTIF,                             // UTIF
+  jsZip: window.JSZip                     // JSZip
+};
+
+const ui = app.ui;
+const config = app.config;
+const state = app.state;
+const lib = app.lib;

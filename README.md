@@ -8,7 +8,7 @@
 
 
 <center>
-   <img src=".github/images/v1.1.0/featured-desktop-solo-dark.jpg" alt="mazanoke desktop screen capture dark mode" width="1200">
+   <img src=".github/images/v1.1.5/featured-desktop-solo-dark.jpg" alt="mazanoke desktop screen capture dark mode" width="1200">
 </center>
 
 ## About
@@ -29,36 +29,30 @@ Created for everyday people and designed to be shared with family and friends, i
   - Set target file size
   - Set max width/height
   - Paste images from clipboard
-  - Convert between and to `JPG`, `PNG`, `WebP`
-  - Convert from `HEIC`, `AVIF`, `GIF`, `SVG`
+  - Convert between and to `JPG`, `PNG`, `WebP`, `ICO`
+  - Convert from `HEIC`, `AVIF`, `TIFF`, `GIF`, `SVG`
 - 🔒 **Privacy-Focused**
   - Works offline
   - On-device image processing
   - Removes EXIF data (location, date, etc.)
   - No tracking
-  - Installable web app ([learn more](#web-app))
-
-**Planned**
-- [X] Upload multiple files at once
-- [X] Support for more image file types
-  - Recently added conversion from: `HEIC`, `AVIF`, `GIF`, `SVG` → `JPG/PNG/WebP`
-- [X] Remember last-used settings
-- [ ] Image cropping
+  - Installable web app ([learn more](./docs/install-web-app.md))
 
 ## Install
 
 ### Docker
 
 1. Using [Docker Compose](https://docs.docker.com/compose/):
-```
-services:
-  mazanoke:
-    container_name: mazanoke
-    image: ghcr.io/civilblur/mazanoke:latest
-    ports:
-      - "3474:80"
-```
-2. Access the app at `http://localhost:3474`
+    ```yaml
+    services:
+      mazanoke:
+        container_name: mazanoke
+        image: ghcr.io/civilblur/mazanoke:latest
+        ports:
+          - "3474:80"
+    ```
+    Available environmental variables: [Configuration](./docs/configuration.md)
+1. Access the app at `http://localhost:3474`
 
 ### Local
 
@@ -69,7 +63,7 @@ services:
 
 1. Visit [MAZANOKE.com](https://mazanoke.com/), or self-host for even stronger privacy.
 1. Click the "Install" button in the top-right.
-   - If the button isn’t available, you can still install it manually in a few simple clicks. ([See how](./docs/install-web-app.md))
+   - If the button isn’t available, you can still install it manually in a few simple clicks. ([See how](./docs/install-web-app.md#manual-install))
 1. A shortcut to MAZANOKE will be added to your device and can even be used offline.
 
 <img src=".github/images/install-web-app/capture-install-pwa-button.png" alt="Install MAZANOKE progressive web app button" height="100">
@@ -77,17 +71,17 @@ services:
 ## Screenshots
 
 <center>
-   <img src=".github/images/v1.1.0/featured-image-mobile-group-dark-light.jpg" alt="mazanoke mobile devices" width="1200">
+   <img src=".github/images/v1.1.5/featured-image-mobile-group-dark-light.jpg" alt="mazanoke mobile devices" width="1200">
 </center>
 
 <center>
-   <img src=".github/images/v1.1.0/featured-desktop-solo-light.jpg" alt="mazanoke desktop screen capture light mode" width="1200">
+   <img src=".github/images/v1.1.5/featured-desktop-solo-light.jpg" alt="mazanoke desktop screen capture light mode" width="1200">
 </center>
 
 |    |   |
 | :---: | :---: |
-| Dark mode<br><img src=".github/images/v1.1.0/capture-desktop-dark.jpg" alt="mazanoke dark mode" width="90%%"> | Light mode<br><img src=".github/images/v1.1.0/capture-desktop-light.jpg" alt="mazanoke light mode" width="90%%">  |
-| Settings<br><img src=".github/images/v1.1.0/capture-desktop-solo-settings-dark.jpg" alt="mazanoke settings" width="90%%">  | Download images<br><img src=".github/images/v1.1.0/capture-desktop-solo-output-dark.jpg" alt="mazanoke settings" width="90%%">  |
+| Dark mode<br><img src=".github/images/v1.1.5/capture-desktop-dark.jpg" alt="mazanoke dark mode" width="90%%"> | Light mode<br><img src=".github/images/v1.1.5/capture-desktop-light.jpg" alt="mazanoke light mode" width="90%%">  |
+| Settings<br><img src=".github/images/v1.1.5/capture-desktop-solo-settings-dark.jpg" alt="mazanoke settings" width="90%%">  | Download images<br><img src=".github/images/v1.1.5/capture-desktop-solo-output-dark.jpg" alt="mazanoke settings" width="90%%">  |
 
 ## Attributions
 - [Browser Image Compression](https://github.com/Donaldcwl/browser-image-compression)

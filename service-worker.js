@@ -1,4 +1,4 @@
-const APP_VERSION = 'v1.1.4';
+const APP_VERSION = 'v1.1.5';
 const CACHE_VERSION = APP_VERSION;
 const CACHE_NAME = `mazanoke-cache-${CACHE_VERSION}`;
 const urlsToCache = [
@@ -9,6 +9,9 @@ const urlsToCache = [
   '/assets/css/style.css',
   '/assets/vendor/browser-image-compression.js',
   '/assets/vendor/heic-to.js',
+  '/assets/vendor/libheif.js',
+  '/assets/vendor/ico.js',
+  '/assets/vendor/png2ico.js',
   '/assets/vendor/jszip.js',
   '/assets/js/global.js',
   '/assets/js/utilities.js',

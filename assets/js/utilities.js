@@ -1,7 +1,7 @@
 function isFileTypeSupported(fileType, file) {
   // Check for supported file types
 
-  if (HeicTo.isHeic(file) && isHeicExt(file)) {
+  if (lib.heicTo.isHeic(file) && isHeicExt(file)) {
     fileType = "image/heic";
     ui.outputFileType = "image/heic";
     console.log('File type is HEIC: ', fileType)
@@ -17,9 +17,27 @@ function isFileTypeSupported(fileType, file) {
     "image/gif",
     "image/svg+xml",
     "image/jxl",
+    "image/vnd.microsoft.icon",
+    "image/x-icon",
+    "image/tiff",
   ];
 
   return supportedFileTypes.includes(fileType);
+}
+
+function isPostProcessingRequired(targetOutputfileType) {
+
+  const postProcessingTypes = [
+    /**
+     * Add mime types which browsers cannot natively output
+     * and requires custom encoding to handle the final image file.
+     * Implement the handling in `postProcessImage()`.
+     */
+    "image/vnd.microsoft.icon",
+    "image/x-icon",
+  ];
+
+  return postProcessingTypes.includes(targetOutputfileType);
 }
 
 function mimeToExtension(mimeType) {
@@ -33,6 +51,11 @@ function mimeToExtension(mimeType) {
     "image/gif": "gif",
     "image/svg+xml": "svg",
     "image/jxl": "jxl",
+    "image/vnd.microsoft.icon": "ico",
+    "image/x-icon": "ico",
+    "image/tiff": "tiff",
+    "image/dng": "tiff",
+    "image/x-adobe-dng": "tiff",
   };
 
   return (
@@ -49,7 +72,8 @@ function defaultConversionMapping(mimeType) {
     "image/avif": "image/png",
     "image/gif": "image/png",
     "image/svg+xml": "image/png",
-    "image/jxl": "image/png",
+    "image/vnd.microsoft.icon": "image/png",
+    "image/x-icon": "image/png",
   };
 
   console.log('Input mimeType ', mimeType);
@@ -70,10 +94,22 @@ function isFileExt(file, extension = "") {
   return fileName.endsWith(`.${extension}`);
 }
 
+/**
+ * Determines the input and output file types and extensions based on the user-uploaded file
+ * and the user-selected target format.
+ *
+ * @param {File} file - Image file object.
+ * @returns {Object} An object containing:
+ *   @property {string} inputFileType - The mime type of the uploaded file (e.g., "image/jpeg").
+ *   @property {string} inputFileExtension - The file extension of the uploaded file (e.g., "jpg").
+ *   @property {string} outputFileExtension - The target file extension after compression (e.g., "webp").
+ *   @property {string} selectedFormat - The mime type of the user-selected output format (e.g., "image/webp").
+ */
 function getFileType(file) {
-  let selectedFormat = document.querySelector('input[name="formatSelect"]:checked').value; // User-selected format to convert to, e.g. "image/jpeg".
-  let inputFileExtension = ""; // User-uploaded image's file extension, e.g. `.jpg`.
-  let outputFileExtension = ""; // The processed image's file extension, based on `defaultConversionMapping()`.
+  let selectedFormat = getCheckedValue(ui.inputs.formatSelect);
+  let inputFileType = file.type;
+  let inputFileExtension = "";
+  let outputFileExtension = "";
 
   if (selectedFormat && selectedFormat !== "default") {
     // The user-selected format to convert to.
@@ -82,8 +118,8 @@ function getFileType(file) {
     outputFileExtension = extension;
   } else {
     // User has not selected a file format, use the input image's file type.
-    selectedFormat = file.type ? file.type : "png";
-    file.type = !file.type && isHeicExt(file) ? "image/heic" : "";
+    selectedFormat = file.type || "png";
+    file.type = !file.type && isHeicExt(file) ? "image/heic" : file.type;
     inputFileExtension = mimeToExtension(file.type) || "";
 
     console.log("inputFileExtension: ", inputFileExtension);
@@ -92,6 +128,7 @@ function getFileType(file) {
   }
 
   return {
+    inputFileType,
     inputFileExtension,
     outputFileExtension,
     selectedFormat,
@@ -120,9 +157,11 @@ function appendFileNameId(fileName = "image") {
 }
 
 function renameBrowserDefaultFileName(fileName) {
-  // Naive approach to check if an image was pasted from clipboard and received a default name by the browser,
-  // e.g., `image.png`. This method is potentially browser and language-dependent, if naming conventions vary.
-  // `HEIF Image.heic` concerns iOS devices, e.g. when drag-and-dropping a subject cut-out.
+  /**
+   * Naive approach to check if an image was pasted from clipboard and received a default name by the browser,
+   * e.g., `image.png`. This method is potentially browser and language-dependent, if naming conventions vary.
+   * `HEIF Image.heic` concerns iOS devices, e.g. when drag-and-dropping a subject cut-out.
+   */ 
   const defaultNames = [/^image\.\w+$/i, /^heif image\.heic$/i];
 
   if (defaultNames.some(regex => regex.test(fileName))) {
@@ -158,43 +197,61 @@ function getCheckedValue(nodeList) {
   return [...nodeList].find((el) => el.checked)?.value || null;
 }
 
-function getImageDimensions(imageInput, callback) {
-  const img = new Image();
+function getImageDimensions(imageInput) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    let objectUrl;
 
-  if (imageInput instanceof Blob) {
-    img.src = URL.createObjectURL(imageInput);
-  }
-  else if (typeof imageInput === "string") {
-    img.src = imageInput;
-  }
-  else {
-    console.error("Invalid input provided to getImageDimensions.");
-    callback(null);
-    return;
-  }
+    if (imageInput instanceof Blob) {
+      objectUrl = URL.createObjectURL(imageInput);
+      img.src = objectUrl;
+    } else if (typeof imageInput === "string") {
+      img.src = imageInput;
+    } else {
+      reject(new Error("Invalid input provided to getImageDimensions."));
+      return;
+    }
 
-  img.onload = () => callback({ width: img.naturalWidth, height: img.naturalHeight });
-  img.onerror = () => callback(null);
-}
+    img.onload = () => {
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+      resolve({
+        outputImageWidth: img.naturalWidth,
+        outputImageHeight: img.naturalHeight,
+      });
+    };
 
-function getAdjustedDimensions(imageBlob, desiredLimitDimensions) {
-  // Adjusts image dimensions to prevent the short edge from being 0.
-  // Calculates the minimum long edge based on a 1px short edge while keeping aspect ratio.
-  return new Promise((resolve) => {
-    getImageDimensions(imageBlob, ({ width, height }) => {
-      if (!width || !height) {
-        resolve(undefined);
-        return;
-      }
-      const shortEdge = Math.min(width, height);
-      const longEdge = Math.max(width, height);
-      const shortEdgeMin = 1;
-      const minAllowedDimension = longEdge * (shortEdgeMin / shortEdge);
-      const limitDimensionsValue = desiredLimitDimensions > Math.ceil(minAllowedDimension) ? desiredLimitDimensions : Math.ceil(minAllowedDimension);
-      resolve(limitDimensionsValue);
-    });
+    img.onerror = () => {
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+      reject(new Error("Failed to load image for dimensions."));
+    };
   });
 }
+
+function getAdjustedDimensions({ imageBlob, width, height }, desiredLimitDimensions) {
+  // Adjusts image dimensions to prevent the short edge from being 0.
+  // Calculates the minimum long edge based on a 1px short edge while keeping aspect ratio.
+
+  return new Promise((resolve) => {
+    const compute = (w, h) => {
+      if (!w || !h) return resolve(undefined);
+      const shortEdge = Math.min(w, h);
+      const longEdge = Math.max(w, h);
+      const minAllowedDimension = Math.ceil(longEdge * (1 / shortEdge));
+      resolve(Math.max(desiredLimitDimensions, minAllowedDimension));
+    };
+
+    if (typeof width === 'number' && typeof height === 'number') {
+      compute(width, height);
+    } else if (imageBlob instanceof Blob) {
+      getImageDimensions(imageBlob).then(({ outputImageWidth, outputImageHeight }) => {
+        compute(outputImageWidth, outputImageHeight);
+      });
+    } else {
+      resolve(undefined);
+    }
+  });
+}
+
 
 function debugBlobImageOutput(blob) {
   const blobURL = URL.createObjectURL(blob);
